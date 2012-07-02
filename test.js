@@ -47,8 +47,9 @@ function main() {
 		}
 
 		while (true) {
-			var tid = pthread.wait();
-			log('parent: ' + tid + ' exited');
+			log('parent hogging');
+			// var tid = pthread.wait();
+			// log('parent: ' + tid + ' exited');
 		}
 	}
 	else {

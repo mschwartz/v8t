@@ -75,6 +75,7 @@ int main (int argc, char *argv[]) {
    char *source = readFile("test.js");
 
    Locker locker;
+   Locker::StartPreemption(10);
    HandleScope scope;
    InitGlobalObject();
    context = Context::New(NULL, globalObject);
