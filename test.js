@@ -24,7 +24,7 @@ function thread(n) {
 	while (true) {
 		nnn++;
 		nnnn++;
-		log('thread ' + n + ' here ' + nnn + ' ' + nnnn);
+		log('thread ' + this.t + ' here ' + nnn + ' ' + nnnn);
 	}
 }
 
