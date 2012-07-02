@@ -122,6 +122,7 @@ static ThreadList activeList, exitedList, waitList;
 // };
 
 void *ThreadWrapper(void *p) {
+    pthread_detach(pthread_self());
     Thread *t = (Thread *)p;
     // tinfo *info = (tinfo *)vinfo;
     {

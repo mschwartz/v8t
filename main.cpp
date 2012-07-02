@@ -75,7 +75,7 @@ int main (int argc, char *argv[]) {
    char *source = readFile("test.js");
 
    Locker locker;
-   Locker::StartPreemption(10);
+   Locker::StartPreemption(0);
    HandleScope scope;
    InitGlobalObject();
    context = Context::New(NULL, globalObject);
@@ -114,28 +114,3 @@ int main (int argc, char *argv[]) {
    }
    context.Dispose();
 }
-
-// void *PrintHello(void *threadid)
-// {
-//    long tid;
-//    tid = (long)threadid;
-//    printf("Hello World! It's me, thread #%ld!\n", tid);
-//    pthread_exit(NULL);
-// }
-
-
-   // pthread_t threads[NUM_THREADS];
-   // int rc;
-   // long t;
-   // for(t=0; t<NUM_THREADS; t++){
-   //    printf("In main: creating thread %ld\n", t);
-   //    rc = pthread_create(&threads[t], NULL, PrintHello, (void *)t);
-   //    if (rc){
-   //       printf("ERROR; return code from pthread_create() is %d\n", rc);
-   //       exit(-1);
-   //    }
-   // }
-
-   // /* Last thing that main() should do */
-   // pthread_exit(NULL);
-// }
