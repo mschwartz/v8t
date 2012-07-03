@@ -188,7 +188,7 @@ static Handle<Value> Spawn(const Arguments& args) {
    return Integer::New(t->threadId);
 }
 
-void InitThreads() {
+void init_pthread_object() {
     Handle<ObjectTemplate>o = ObjectTemplate::New();
     o->Set(String::New("spawn"), FunctionTemplate::New(Spawn));
     o->Set(String::New("wait"), FunctionTemplate::New(Wait));

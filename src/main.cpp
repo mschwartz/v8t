@@ -1,11 +1,4 @@
-#include <pthread.h>
-#include <stdio.h>
-#include <fcntl.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <v8.h>
-
-using namespace v8;
+#include "SilkJS.h"
 
 Persistent<ObjectTemplate> globalObject;
 Persistent<Context> context;
@@ -72,29 +65,56 @@ void ReportException (v8::TryCatch* try_catch) {
 extern void InitGlobalObject();
 
 int main (int argc, char *argv[]) {
-   char *source = readFile("test.js");
+    char *startup;
+    const char *progName;
 
-   Locker locker;
-   Locker::StartPreemption(0);
-   HandleScope scope;
-   InitGlobalObject();
-   context = Context::New(NULL, globalObject);
-   Context::Scope context_scope(context);
+    if (argc < 2) {
+        startup = readFile("/usr/local/silkjs/builtin/interpreter.js");
+        if (!startup) {
+            startup = readFile("/usr/share/silkjs/builtin/interpreter.js");
+        }
+        progName = "interpreter";
+    }
+    else {
+        startup = readFile(argv[1]);
+        progName = argv[1];
+    }
 
-   TryCatch tryCatch;
-   Persistent<Script> mainScript = Persistent<Script>::New(Script::Compile(String::New(source), String::New("test.js")));
-   if (mainScript.IsEmpty()) {
+    if (!startup) {
+        printf("%s not found\n", argv[1]);
+        exit(1);
+    }
+    if (startup[0] == '#' && startup[1] == '!') {
+        startup[0] = startup[1] = '/';
+    }
+
+    // v8 command line switches
+    const char *switches = "--harmony";
+    V8::SetFlagsFromString(switches, strlen(switches));
+
+    Locker locker;
+    Locker::StartPreemption(0);
+    HandleScope scope;
+    InitGlobalObject();
+    context = Context::New(NULL, globalObject);
+    Context::Scope context_scope(context);
+
+    TryCatch tryCatch;
+    Handle<Script>init = Script::New(String::New("global=this; module = {}; include('builtin/all.js');"), String::New("builtin"));
+    init->Run();
+    Persistent<Script> mainScript = Persistent<Script>::New(Script::Compile(String::New(startup), String::New(progName)));
+    if (mainScript.IsEmpty()) {
        ReportException(&tryCatch);
        exit(1);
-   }
-   Handle<Value>v = mainScript->Run();
-   if (v.IsEmpty()) {
+    }
+    Handle<Value>v = mainScript->Run();
+    if (v.IsEmpty()) {
        ReportException(&tryCatch);
        exit(1);
-   }
-   Handle<String> process_name = String::New("main");
-   Handle<Value> process_val = context->Global()->Get(process_name);
-   if (!process_val.IsEmpty() && process_val->IsFunction()) {
+    }
+    Handle<String> process_name = String::New("main");
+    Handle<Value> process_val = context->Global()->Get(process_name);
+    if (!process_val.IsEmpty() && process_val->IsFunction()) {
        Handle<Function> process_fun = Handle<Function>::Cast(process_val);
        Persistent<Function> mainFunc = Persistent<Function>::New(process_fun);
        int ac = argc - 2;
@@ -111,6 +131,6 @@ int main (int argc, char *argv[]) {
            ReportException(&tryCatch);
            exit(1);
        }
-   }
-   context.Dispose();
+    }
+    context.Dispose();
 }

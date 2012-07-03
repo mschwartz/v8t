@@ -1,7 +1,4 @@
-OBJ=main.o global.o threads.o
+all:
+	cd src && make
+	cp src/v8t .
 
-.cpp.o:
-	g++ -I/usr/local/silkjs/src/v8/include -c -o $*.o $*.cpp
-
-all: $(OBJ)
-	g++ -o test $(OBJ) -L/usr/local/silkjs/src/v8 -lv8 -lpthread -Wl,-rpath,/usr/local/silkjs/src/v8

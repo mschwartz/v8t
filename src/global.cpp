@@ -41,19 +41,12 @@ static Handle<Value> Include (const Arguments& args) {
     for (int i = 0; i < args.Length(); i++) {
         String::Utf8Value str(args[i]);
         char buf[strlen(*str) + 18 + 1];
+        strcpy(buf, *str);
         char *js_file = readFile(*str);
         if (!js_file) {
             strcpy(buf, *str);
             if (buf[0] != '/') {
                 strcpy(buf, "/usr/local/silkjs/");
-                strcat(buf, *str);
-            }
-            js_file = readFile(buf);
-        }
-        if (!js_file) {
-            strcpy(buf, *str);
-            if (buf[0] != '/') {
-                strcpy(buf, "/usr/share/silkjs/");
                 strcat(buf, *str);
             }
             js_file = readFile(buf);
@@ -70,12 +63,25 @@ static Handle<Value> Include (const Arguments& args) {
     return Undefined();
 }
 
-extern void InitThreads();
+extern void init_pthread_object(),
+            init_console_object(),
+            init_editline_object(),
+            init_process_object(),
+            init_net_object(),
+            init_fs_object(),
+            init_v8_object();
 
 void InitGlobalObject() {
     globalObject = Persistent<ObjectTemplate>::New(ObjectTemplate::New());
     builtinObject = Persistent<ObjectTemplate>::New(ObjectTemplate::New());
-    InitThreads();
+    
+    init_pthread_object();
+    init_editline_object();
+    init_console_object();
+    init_process_object();
+    init_net_object();
+    init_fs_object();
+    init_v8_object();
 
     globalObject->Set(String::New("builtin"), builtinObject);
 

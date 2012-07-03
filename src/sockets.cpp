@@ -49,6 +49,27 @@ public:
     void Cork(int flag) {
         setsockopt(sock, IPPROTO_TCP, &flag, sizeof(flag));
     }
+    void Close() {
+        if (sock > 0) {
+            close(s);
+        }
+        sock = 0;
+    }
+    char *Read(int size, timeout = 5) {
+        fd_set fds;
+        FD_ZERO(&fds);
+        FD_SET(fd, &fds);
+        struct timeval tmo;
+        tmo.tv_sec = timeout;
+        tmo.tv_usec = 0;
+        switch (select(fd+1, &fds, NULL, NULL, &timeout)) {
+            case -1:
+                sprintf(error, "Read Error: %s", strerror(errno));
+                return;
+            case 0:
+                return Null();  // read timed out
+        }
+    }
 };
 
 static Handle<Value> Listen(const Arguments& args) {
