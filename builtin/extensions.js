@@ -70,7 +70,7 @@ Object.prototype.extend = Function.prototype.extend = function() {
                     me.__defineSetter__(key, s);
                 }
             }
-            else {
+            else if (o.hasOwnProperty(key)) {
                 me[key] = o[key];
             }
         }

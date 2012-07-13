@@ -93,12 +93,12 @@ int main (int argc, char *argv[]) {
     V8::SetFlagsFromString(switches, strlen(switches));
 
     Locker locker;
-    Locker::StartPreemption(0);
+    Locker::StartPreemption(1000);
     HandleScope scope;
     InitGlobalObject();
     context = Context::New(NULL, globalObject);
     Context::Scope context_scope(context);
-
+// { Locker l;
     TryCatch tryCatch;
     Handle<Script>init = Script::New(String::New("global=this; module = {}; include('builtin/all.js');"), String::New("builtin"));
     init->Run();
@@ -132,5 +132,6 @@ int main (int argc, char *argv[]) {
            exit(1);
        }
     }
+// }
     context.Dispose();
 }

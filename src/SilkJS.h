@@ -55,6 +55,7 @@ extern int decode_base64(unsigned char *dest, const char *src);
 
 extern Persistent<ObjectTemplate> globalObject;
 extern Persistent<ObjectTemplate> builtinObject;
+extern Persistent<Context> context;
 
 extern void init_global_object();
 
@@ -71,8 +72,6 @@ static inline void *JSEXTERN(Handle<Value>v) {
     Handle<External>wrap = Handle<External>::Cast(v);
     return (void *)wrap->Value();
 }
-#define THROW(tmpl,...)    { char msg[1024]; snprintf(msg,1000,tmpl,__VA_ARGS__); THROW(msg); }
-
 
 
 #define BUFFER_STRING

@@ -1,8 +1,5 @@
-#include <unistd.h>
-#include <string.h>
-#include <v8.h>
-
-using namespace v8;
+#include "SilkJS.h"
+#include <pthread.h>
 
 extern Persistent<ObjectTemplate> globalObject;
 Persistent<ObjectTemplate> builtinObject;
@@ -11,7 +8,7 @@ static Handle<Value> Log (const Arguments& args) {
     {
         String::AsciiValue str(args[0]);
         Unlocker ul;
-        printf("%ld %s\n", (unsigned long) getpid(), *str);
+        printf("%l08lx %s\n", (unsigned long) pthread_self(), *str);
     }
     return Undefined();
 }
@@ -69,7 +66,8 @@ extern void init_pthread_object(),
             init_process_object(),
             init_net_object(),
             init_fs_object(),
-            init_v8_object();
+            init_v8_object(),
+            init_mem_object();
 
 void InitGlobalObject() {
     globalObject = Persistent<ObjectTemplate>::New(ObjectTemplate::New());
@@ -82,6 +80,7 @@ void InitGlobalObject() {
     init_net_object();
     init_fs_object();
     init_v8_object();
+    init_mem_object();
 
     globalObject->Set(String::New("builtin"), builtinObject);
 

@@ -15,102 +15,6 @@
  */
 #include "SilkJS.h"
 
-static JSVAL net_socket(JSARGS args) {
-    return Integer::New(socket(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue()));
-}
-
-static JSVAL net_listen(JSARGS args) {
-    int fd = args[0]->IntegerValue();
-    int port = args[1]->IntegerValue();
-    int listenAddress = args[2]->IntegerValue();
-    int backlog = args[3]->IntegerValue();
-
-    int on = 1;
-    setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
-    struct sockaddr_in my_addr;
-    bzero(&my_addr, sizeof (my_addr));
-    my_addr.sin_family = AF_INET;
-    my_addr.sin_port = htons(port);
-    my_addr.sin_addr.s_addr = listenAddress; // htonl(listenAddress);
-    if (bind(fd, (struct sockaddr *) &my_addr, sizeof (my_addr))) {
-        return ThrowException(String::Concat(String::New("bind()Error: "), String::New(strerror(errno))));
-    }
-    if (listen(fd, backlog)) {
-        return ThrowException(String::Concat(String::New("listen() Error: "), String::New(strerror(errno))));
-    }
-    return Undefined();
-}
-
-static JSVAL net_error(JSARGS args) {
-    return String::New(strerror(errno));
-}
-
-static JSVAL net_accept (JSARGS args) {
-    struct sockaddr_in their_addr;
-
-    int sock = args[0]->IntegerValue();
-
-    socklen_t sock_size = sizeof (struct sockaddr_in);
-    bzero(&their_addr, sizeof (their_addr));
-
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(sock, &fds);
-        //  struct timeval timeout;
-        //  timeout.tv_sec = 5;
-        //  timeout.tv_usec = 0;
-    {
-        Unlocker u;
-        switch (select(sock + 1, &fds, NULL, NULL, NULL)) {
-            case -1:
-                perror("select");
-                return ThrowException(String::Concat(String::New("Read Error: "), String::New(strerror(errno))));
-            case 0:
-                printf("select timed out\n");
-                return Null();
-        }
-
-        while (1) {
-            sock = accept(sock, (struct sockaddr *) &their_addr, &sock_size);
-            if (sock > 0) {
-                break;
-            }
-            else {
-                perror("accept");
-            }
-        }
-    }
-    // {
-    //     int x;
-    //     x = fcntl(sock, F_GETFL, 0);
-    //     fcntl(sock, F_SETFL, x | O_NONBLOCK);
-    //     printf("set %d non blocking\n", sock);
-    // }
-    JSOBJ o = Object::New();
-    o->Set(String::New("fd"), Integer::New(sock));
-    o->Set(String::New("remote_addr"), String::New(inet_ntoa(their_addr.sin_addr)));
-    return o;
-}
-
-static JSVAL net_close(JSARGS args) {
-    return Integer::New(close(args[0]->IntegerValue()));
-}
-
-void init_net_object() {
-    Handle<ObjectTemplate>net = ObjectTemplate::New();
-    net->Set(String::New("AF_INET"), Integer::New(AF_INET));
-    net->Set(String::New("SOCK_STREAM"), Integer::New(SOCK_STREAM));
-    net->Set(String::New("INADDR_ANY"), Integer::New(INADDR_ANY));
-
-    net->Set(String::New("error"), FunctionTemplate::New(net_error));
-    net->Set(String::New("socket"), FunctionTemplate::New(net_socket));
-    net->Set(String::New("listen"), FunctionTemplate::New(net_listen));
-    net->Set(String::New("accept"), FunctionTemplate::New(net_accept));
-    net->Set(String::New("close"), FunctionTemplate::New(net_close));
-    builtinObject->Set(String::New("net"), net);
-}
-
-#if 0
 #define USE_CORK
 #ifdef __APPLE__
 //#define TCP_CORK TCP_NOPUSH
@@ -591,4 +495,3 @@ void init_net_object () {
 
     builtinObject->Set(String::New("net"), net);
 }
-#endif

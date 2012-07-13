@@ -1,4 +1,4 @@
-/* 
+/*
  * CommonJS require 1.1 implementation
  */
 
@@ -64,7 +64,7 @@
 				}
 			}
 		}
-		throw 'Could not locate require file ' + module;
+		throw new Error('Could not locate require file ' + module);
 	}
 	// coffeescript support
 	var suffix = '.coffee',
@@ -130,4 +130,5 @@
         '/usr/local/silkjs/contrib',
 		'/usr/share/silkjs/modules'
 	];
+
 }());
