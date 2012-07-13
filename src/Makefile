@@ -1,8 +1,8 @@
 UNAME := $(shell uname -s)
 
-OBJ=main.o base64.o md5.o global.o console.o threads.o binary.o net.o v8.o fs.o process.o linenoise.o editline.o async.o
+OBJ=main.o base64.o md5.o global.o console.o threads.o binary.o net.o v8.o fs.o process.o linenoise.o editline.o async.o http.o
 
-.cpp.o:
+%.o: %.cpp SilkJS.h
 	g++ -g -I/usr/local/silkjs/src/v8/include -c -o $*.o $*.cpp
 
 all: $(OBJ)

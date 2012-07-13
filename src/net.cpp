@@ -96,6 +96,22 @@ static JSVAL net_close(JSARGS args) {
     return Integer::New(close(args[0]->IntegerValue()));
 }
 
+#ifdef __APPLE__
+//#define TCP_CORK TCP_NOPUSH
+#define TCP_CORK TCP_NODELAY
+#endif
+
+static JSVAL net_cork (JSARGS args) {
+    int fd = args[0]->IntegerValue();
+    int flag = args[1]->IntegerValue();
+    {
+        // Unlocker u;
+        setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof (flag));
+    }
+    return Undefined();
+}
+
+
 void init_net_object() {
     Handle<ObjectTemplate>net = ObjectTemplate::New();
     net->Set(String::New("AF_INET"), Integer::New(AF_INET));
@@ -107,6 +123,7 @@ void init_net_object() {
     net->Set(String::New("listen"), FunctionTemplate::New(net_listen));
     net->Set(String::New("accept"), FunctionTemplate::New(net_accept));
     net->Set(String::New("close"), FunctionTemplate::New(net_close));
+    net->Set(String::New("cork"), FunctionTemplate::New(net_cork));
     builtinObject->Set(String::New("net"), net);
 }
 

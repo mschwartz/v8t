@@ -2,7 +2,8 @@
 (function() {
     "use strict";
 
-    var Memory = require('binary').Memory;
+    var Memory = require('binary').Memory,
+        net = require('builtin/net');
 
     function OutputStream(fd) {
         this.fd = fd;
@@ -15,6 +16,9 @@
             this.buffer.destroy();
         },
         write: function(s) {
+            if (!this.offset) {
+                net.cork(this.fd, true);
+            }
             var len = s.length;
             if (this.offset + len > this.size) {
                 var new_size = this.size + length + 4096;
@@ -28,6 +32,7 @@
             if (this.offset) {
                 this.buffer.write(this.fd, 0, this.offset);
                 this.offset = 0;
+                net.cork(this.fd, false);
             }
         }
     });

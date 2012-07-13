@@ -93,7 +93,7 @@ int main (int argc, char *argv[]) {
     V8::SetFlagsFromString(switches, strlen(switches));
 
     Locker locker;
-    Locker::StartPreemption(1000);
+    Locker::StartPreemption(10);
     HandleScope scope;
     InitGlobalObject();
     context = Context::New(NULL, globalObject);

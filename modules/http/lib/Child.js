@@ -7,11 +7,13 @@
         InputStream = require('socket').InputStream,
         OutputStream = require('socket').OutputStream,
         Request = require('Request').Request,
+        http = require('builtin/http'),
         Response = require('Response').Response;
 
     function Child(serverSocket, fn) {
         // console.log(this.threadId + ' alive');
         this.on('exit', function() {
+            log('exit');
             new Thread(Child, serverSocket, fn).start();
         });
         while (true) {
@@ -23,8 +25,9 @@
             // console.dir(sock);
             serverSocket.mutex.unlock();
 
-            var is = new InputStream(sock.fd),
+            var is = http.openStream(sock.fd), // new InputStream(sock.fd),
                 os = new OutputStream(sock.fd);
+
             var keepAlive = true;
             while (keepAlive) {
                 try {
@@ -49,6 +52,7 @@
                     console.dir(e.stack);
                 }
             }
+            http.closeStream(is);
             sock.destroy();
         }
     }

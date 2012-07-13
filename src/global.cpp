@@ -67,6 +67,7 @@ extern void init_pthread_object(),
             init_net_object(),
             init_fs_object(),
             init_v8_object(),
+            init_http_object(),
             init_mem_object();
 
 void InitGlobalObject() {
@@ -81,6 +82,7 @@ void InitGlobalObject() {
     init_fs_object();
     init_v8_object();
     init_mem_object();
+    init_http_object();
 
     globalObject->Set(String::New("builtin"), builtinObject);
 
