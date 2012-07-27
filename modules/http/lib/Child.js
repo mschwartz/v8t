@@ -1,4 +1,4 @@
-/*global require, exports */
+/*global require, exports, log */
 (function() {
     "use strict";
  
@@ -11,21 +11,16 @@
         Response = require('Response').Response;
 
     function Child(serverSocket, fn) {
-        // console.log(this.threadId + ' alive');
         this.on('exit', function() {
             log('exit');
             new Thread(Child, serverSocket, fn).start();
         });
         while (true) {
-            // console.log(this.threadId + ' locking');
             serverSocket.mutex.lock();
-            // console.log(this.threadId + ' got lock');
             var sock = serverSocket.accept();
-            // console.log(this.threadId + ' accepted connection ' + sock.fd + ' from ' + sock.remote_addr);
-            // console.dir(sock);
             serverSocket.mutex.unlock();
 
-            var is = http.openStream(sock.fd), // new InputStream(sock.fd),
+            var is = new InputStream(sock.fd),
                 os = new OutputStream(sock.fd);
 
             var keepAlive = true;
@@ -52,7 +47,8 @@
                     console.dir(e.stack);
                 }
             }
-            http.closeStream(is);
+            is.destroy();
+            os.destroy();
             sock.destroy();
         }
     }

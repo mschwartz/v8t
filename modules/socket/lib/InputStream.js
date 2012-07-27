@@ -25,7 +25,7 @@
                 this.end = 0;
                 while (this.end === 0) {
                     this.end = this.buffer.read(this.fd, 0, 4096);
-                    if (this.end <= 0) {
+                    if (this.end <= 0 || this.end === null) {
                         this.eof = true;
                         throw 'EOF';
                     }

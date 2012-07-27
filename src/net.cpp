@@ -66,7 +66,7 @@ static JSVAL net_accept (JSARGS args) {
                 perror("select");
                 return ThrowException(String::Concat(String::New("Read Error: "), String::New(strerror(errno))));
             case 0:
-                printf("select timed out\n");
+                // printf("select timed out\n");
                 return Null();
         }
 
@@ -105,7 +105,7 @@ static JSVAL net_cork (JSARGS args) {
     int fd = args[0]->IntegerValue();
     int flag = args[1]->IntegerValue();
     {
-        // Unlocker u;
+        Unlocker u;
         setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof (flag));
     }
     return Undefined();

@@ -121,7 +121,7 @@ static JSVAL mem_read(JSARGS args) {
                 perror("select");
                 return ThrowException(String::Concat(String::New("Read Error: "), String::New(strerror(errno))));
             case 0:
-                // printf("Read timed out\n");
+                printf("Read timed out\n");
                 return Null();
         }
         n = read(fd, &m->mem[offset], size);

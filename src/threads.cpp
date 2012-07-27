@@ -1,12 +1,6 @@
 #include "SilkJS.h"
 #include <pthread.h>
 
-// using namespace v8;
-
-// extern Persistent<ObjectTemplate> globalObject;
-// extern Persistent<ObjectTemplate> builtinObject;
-// extern Persistent<Context> context;
-
 unsigned short nextThreadId = 0;
 
 struct ThreadInfo {
@@ -18,13 +12,8 @@ public:
 
 static pthread_key_t tls_key;
 
-extern void ReportException (v8::TryCatch* try_catch);
-
 static void *runner(void *p) {
-    // Context::Scope cscope(context);
-    // HandleScope scope;
     ThreadInfo *t = (ThreadInfo *)p;
-    // printf("%08lx > runner\n", pthread_self());
     pthread_setspecific(tls_key, t);
     pthread_detach(pthread_self());
     {
@@ -42,35 +31,20 @@ static void *runner(void *p) {
         Handle<Function>func = Handle<Function>::Cast(v);
         Handle<Value>av[1];
         av[0] = t->o;
-        // TryCatch tryCatch;
-        // printf("CALL\n");
-        // context->Enter();
         v = func->Call(context->Global(), 1, av);
-        // context->Exit();
-
-        // if (v.IsEmpty()) {
-            // printf("Exception!");
-            // ReportException(&tryCatch);
-        // }
     }
-    // printf("exitx\n");
     pthread_exit(NULL);
 }
 
 static JSVAL create(JSARGS args) {
     Locker l;
-    // printf("%08lx > create\n", pthread_self());
     ThreadInfo *t;
     t = new ThreadInfo;
-    // t->threadId = nextThreadId++;
     t->o = Persistent<Object>::New(args[0]->ToObject());
     {
-        // Unlocker ul;
+        Unlocker ul;
         pthread_attr_t attr;
-        pthread_attr_init(&attr);
-        pthread_attr_setguardsize(&attr, 4 * 1024);
-        pthread_attr_setstacksize(&attr, 64 * 1024);
-        pthread_create(&t->t, & attr, runner, t);
+        pthread_create(&t->t, NULL, runner, t);
     }
     return Integer::New(t->threadId);
 }
@@ -82,18 +56,14 @@ static JSVAL set_tid(JSARGS args) {
 }
 
 static JSVAL exit(JSARGS args) {
-    Locker l;
-    // printf("%08lx > exit\n", pthread_self());
-    // context->Exit();
-    // sleep(1);
     ThreadInfo *t = (ThreadInfo *)pthread_getspecific(tls_key);
     if (t) {
-        // Locker l;
+        Locker l;
         t->o.Dispose();
     }
     delete t;
     pthread_setspecific(tls_key, NULL);
-    Unlocker u;
+    // Unlocker u;
     pthread_exit(NULL);
 }
 

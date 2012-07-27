@@ -62,11 +62,27 @@ void ReportException (v8::TryCatch* try_catch) {
     }
 }
 
+void AnsiSignalHandler (int sig) {
+    signal(sig, AnsiSignalHandler);
+    if (sig != SIGINT) {
+        printf("Caught Signal %d for process: %ld\n", sig, (size_t) getpid());
+    }
+    if (sig == SIGPIPE) {
+        signal(SIGPIPE, AnsiSignalHandler);
+        return;
+    }
+    exit(sig);
+}
+
 extern void InitGlobalObject();
 
 int main (int argc, char *argv[]) {
     char *startup;
     const char *progName;
+
+    signal(SIGSEGV, AnsiSignalHandler);
+    signal(SIGINT, AnsiSignalHandler);
+    signal(SIGPIPE, AnsiSignalHandler);
 
     if (argc < 2) {
         startup = readFile("/usr/local/silkjs/builtin/interpreter.js");
@@ -93,7 +109,7 @@ int main (int argc, char *argv[]) {
     V8::SetFlagsFromString(switches, strlen(switches));
 
     Locker locker;
-    Locker::StartPreemption(10);
+    Locker::StartPreemption(1);
     HandleScope scope;
     InitGlobalObject();
     context = Context::New(NULL, globalObject);
